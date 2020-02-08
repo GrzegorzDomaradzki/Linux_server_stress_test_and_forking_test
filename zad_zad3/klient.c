@@ -90,14 +90,13 @@ int main(int argc, char** argv)
     clock_t time = clock();
     clock_t end_of_time = (clock_t)(full_time/100)*CLOCKS_PER_SEC;
     end_of_time+=time;
-    int active_clients = 0;
     do
     {
         clock_gettime(CLOCK_REALTIME,&real_time);
-        funct_server(socket_unix,active_clients,server_unix);
+        funct_server(socket_unix,active_connections,server_unix);
         rest_time=check_time(real_time,intervals);
     }while (clock()<end_of_time) ;
-    for (int i=0; i<active_clients;i++) close(socket_unix[i]);
+    for (int i=0; i<active_connections;i++) close(socket_unix[i]);
     free(socket_unix);
     //printf("Full message sending time: %f\nShortest message time: ", ???);
     //print_time(0,min_time);
@@ -110,7 +109,12 @@ int main(int argc, char** argv)
 
 void funct_server(int* socket_unix, int active_clients,struct sockaddr_un server_unix)
 {
+    if (!active_clients) return;
+    printf("Active client %i\n",active_clients );
+    printf("%i\n",rand()%active_clients);
+    printf("I'm still alive!!!\n");
     int socket = socket_unix[rand()%active_clients];
+    printf("I'm still alive!!!\n");
     struct timespec to_send;
     clock_gettime(CLOCK_REALTIME,&to_send);
     char to_send_text[19];

@@ -116,7 +116,7 @@ int open_log()
     {
         char f_name[83];
         sprintf(f_name,"%s%03d",prefix,log_nr);
-        desc = open(f_name,O_WRONLY|O_CREAT|O_TRUNC);
+        desc = open(f_name,O_RDWR|O_CREAT|O_TRUNC);
         if (desc >=0) break;
         ++log_nr;
     }
