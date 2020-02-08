@@ -111,9 +111,9 @@ void funct_server(int* socket_unix, int active_clients,struct sockaddr_un server
 {
     if (!active_clients) return;
     printf("Active client %i\n",active_clients );
-    printf("%i\n",rand()%active_clients);
+    //printf("%i\n",rand()%active_clients);
     printf("I'm still alive!!!\n");
-    int socket = socket_unix[rand()%active_clients];
+    int socket = socket_unix[/*rand()%active_clients*/0];
     printf("I'm still alive!!!\n");
     struct timespec to_send;
     clock_gettime(CLOCK_REALTIME,&to_send);

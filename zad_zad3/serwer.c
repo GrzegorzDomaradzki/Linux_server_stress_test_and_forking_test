@@ -1,19 +1,16 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 
 
@@ -178,7 +175,7 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
     struct timespec send_time, read_time;
     struct sockaddr_un adress;
     int JP_II = 0;
-    for (int i=0; i<client_num;++i)
+    for (int i=0; i<client_num;i++)
     {
         char buff [256];
         printf("%i\n",JP_II++);
@@ -190,15 +187,17 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
         }
         int curr_desc = desc_array[i];
         int c;
-        int i =0;
+        int j =0;
         printf("%i\n",JP_II++);
-        int ret = read(curr_desc,&c,1);
+        int ret = read(curr_desc,&c,1); // errno control!!!
+        char cccc[80];
+        strcpy(cccc,strerror(errno));
         if (ret==-1) continue;
-        buff[i++]=c;
+        buff[j++]=c;
         read(curr_desc,&c,1);
         while('\0'!=c)
         {
-            buff[i++]=(char)c;
+            buff[j++]=(char)c;
             read(curr_desc,&c,1);
         }
 
@@ -212,7 +211,7 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
         struct timespec diff = time_difference(send_time, read_time);
         print_time(*desc, read_time);
         write(*desc,separator,3);
-        write(*desc,buff,i);
+        write(*desc,buff,j);
         write(*desc,separator,3);
         print_time(*desc,diff);
         write(*desc,&separator[3],1);
@@ -240,6 +239,7 @@ struct timespec time_difference(struct timespec first_time, struct timespec seco
 //////////////////////////////////////////////////////////////////
 void print_time(int desc, struct timespec time)
 {
+    desc =0;
     int minutes = time.tv_sec/60;
     char temp = (char)(minutes % 100 /10+48);
     write(desc,&temp,sizeof(char));

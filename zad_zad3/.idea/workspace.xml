@@ -14,10 +14,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="28b6b1d2-6242-4af1-a2ea-c35371b52ae2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klient.c" beforeDir="false" afterPath="$PROJECT_DIR$/klient.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/serwer.c" beforeDir="false" afterPath="$PROJECT_DIR$/serwer.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,6 +29,11 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Grzegorz Domaradzki &lt;grzedom@onet.pl&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectId" id="1XXHvsNyXunQu3F6FWLvquny202" />
@@ -59,12 +63,12 @@
     </option>
   </component>
   <component name="RunManager" selected="CMake Application.sr">
-    <configuration name="cl" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="cl" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="cl">
+    <configuration name="cl" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-p 8000" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="cl" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="cl">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="sr" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="sr" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="sr">
+    <configuration name="sr" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="8000 b" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="sr" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="sr">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -91,8 +95,16 @@
       <option name="presentableId" value="Default" />
       <updated>1581185752168</updated>
       <workItem from="1581185754302" duration="9444000" />
-      <workItem from="1581196326326" duration="1297000" />
+      <workItem from="1581196326326" duration="4821000" />
     </task>
+    <task id="LOCAL-00001" summary="Working client-server service.">
+      <created>1581197930125</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1581197930125</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -108,5 +120,25 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Working client-server service." />
+    <option name="LAST_COMMIT_MESSAGE" value="Working client-server service." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/klient.c</url>
+          <line>231</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/serwer.c</url>
+          <line>174</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
