@@ -63,12 +63,12 @@
     </option>
   </component>
   <component name="RunManager" selected="CMake Application.sr">
-    <configuration name="cl" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-p 8000" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="cl" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="cl">
+    <configuration name="cl" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-p 8001" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="cl" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="cl">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="sr" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="8000 b" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="sr" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="sr">
+    <configuration name="sr" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="8001 b" PASS_PARENT_ENVS_2="true" PROJECT_NAME="zad_zad3" TARGET_NAME="sr" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="zad_zad3" RUN_TARGET_NAME="sr">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -96,7 +96,8 @@
       <updated>1581185752168</updated>
       <workItem from="1581185754302" duration="9444000" />
       <workItem from="1581196326326" duration="4981000" />
-      <workItem from="1581243632487" duration="15137000" />
+      <workItem from="1581243632487" duration="15964000" />
+      <workItem from="1581275855825" duration="4686000" />
     </task>
     <task id="LOCAL-00001" summary="Working client-server service.">
       <created>1581197930125</created>
@@ -126,7 +127,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581250023618</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="time_print working.">
+      <created>1581262050131</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1581262050131</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,15 +158,21 @@
     <MESSAGE value="Debugging commit..." />
     <MESSAGE value="Program ending procedures." />
     <MESSAGE value="Socket communication enabled, sun_family bug fixed - var type is unsigned short, so negative values won't be passed." />
-    <option name="LAST_COMMIT_MESSAGE" value="Socket communication enabled, sun_family bug fixed - var type is unsigned short, so negative values won't be passed." />
+    <MESSAGE value="time_print working." />
+    <option name="LAST_COMMIT_MESSAGE" value="time_print working." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/klient.c</url>
-          <line>266</line>
+          <line>274</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/klient.c</url>
+          <line>311</line>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

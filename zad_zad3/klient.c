@@ -18,7 +18,7 @@ void func_inet(int sockfd, int unix_desc, struct sockaddr_un server, int* socket
 void print_time(int desc, struct timespec time);
 void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un server_unix);
 void time_to_text(char* text, struct timespec time);
-time_t check_time(struct timespec real_time,float intervals);
+long check_time(struct timespec real_time,float intervals);
 struct timespec time_difference(struct timespec first_time, struct timespec second_time);
 
 int main(int argc, char** argv)
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     server_inet.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_inet.sin_port = htons(port);
 
-    int* socket_unix = calloc(100, sizeof(int));
+    int* socket_unix = calloc(1000, sizeof(int));
     int active_connections =0;
     printf("Before connect\n");
     if (connect(sockfd, (struct sockaddr*)&server_inet, sizeof(server_inet)) != 0) {
@@ -85,8 +85,9 @@ int main(int argc, char** argv)
     close(sockfd);
     struct timespec real_time,rest_time,all_time;
     long rest,max=0,min=LONG_MAX;
-    clock_t time = clock();
-    clock_t end_of_time = (clock_t)(full_time/100)*CLOCKS_PER_SEC;
+    long time = clock();
+    long end_of_time = ((long)full_time/100)*CLOCKS_PER_SEC;
+    printf("%li, %li, %li\n",CLOCKS_PER_SEC,(long)full_time,end_of_time);
     end_of_time+=time;
     clock_gettime(CLOCK_REALTIME,&all_time);
     do
@@ -97,37 +98,23 @@ int main(int argc, char** argv)
         if(rest>max) max=rest;
         if(rest<min) min=rest;
         if(rest>0) {
-            rest_time.tv_sec = rest / 1000000000;
-            rest_time.tv_nsec = rest % 1000000000;
+            rest_time.tv_sec = 0;
+            rest_time.tv_nsec = rest;
             nanosleep(&rest_time, NULL);
-            end_of_time-=rest*1000000000/CLOCKS_PER_SEC;
         }
-    }while (/*clock()<end_of_time*/0) ;
+    }while (clock()<end_of_time) ;
     clock_gettime(CLOCK_REALTIME,&real_time);
-    for (int i=0; i<active_connections;i++) close(socket_unix[i]);
+    for (int i=0; i<active_connections;i++)
+    {
+        char c ='\0';
+        write(socket_unix[i],&c, sizeof(char));
+        close(socket_unix[i]);
+    }
     free(socket_unix);
     printf("Full message sending time:\n");
     print_time(0,time_difference(all_time,real_time));
-    printf("\nShortest message time:\n");
-    if (min<0) 
-    {
-        min*=-1;
-        char c = '-';
-        write(0,&c, sizeof(char));
-    }
-    real_time.tv_sec=min/1000000000;
-    real_time.tv_nsec=min%1000000000;
-    print_time(0,real_time);
-    printf("\nLongest message time:\n");
-    if (max<0)
-    {
-        max*=-1;
-        char c = '-';
-        write(0,&c, sizeof(char));
-    }
-    real_time.tv_sec=max/1000000000;
-    real_time.tv_nsec=max%1000000000;
-    print_time(0,real_time);
+    printf("\nShortest message time - useconds: %li\n",min);
+    printf("\nLongest message time - useconds: %li\n",max);
     printf("\n");
     return 0;
 }
@@ -138,11 +125,13 @@ void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un 
     if (!active_clients) return;
     printf("Active client %i\n",active_clients );
     int socket = socket_unix[rand()%active_clients];
+    printf("write to %i\n",socket);
     struct timespec to_send;
     clock_gettime(CLOCK_REALTIME,&to_send);
     char to_send_text[19];
     time_to_text(to_send_text,to_send);
     to_send_text[18]='\0';
+    printf("%s\n",to_send_text);
     int ret = write(socket,to_send_text,19*sizeof(char));
     if (ret==-1)
     {
@@ -200,9 +189,9 @@ void func_inet(int sockfd, int unix_desc, struct sockaddr_un server,int* socket_
 //////////////////////////////////////////////////////////////////
 void options(int argc, char** argv, int* conections_num, int* port, float* intervals, float* full_time)
 {
-    *conections_num=5;
+    *conections_num=50;
     *port =-1;
-    *intervals = 5000;
+    *intervals = 100;
     *full_time = 100;
     char c;
     while ((c = getopt (argc, argv, "S:p:d:T:")) != -1)
@@ -280,12 +269,15 @@ void print_time(int desc, struct timespec time)
     write(desc,&temp,sizeof(char));
     int nanoseconds = time.tv_nsec;
     int j =0;
-    for (int i=1000000000;i>1;i/=10)
+    int n = 6;
+    for (int i=1000000000;i>1 ;i/=10)
     {
         temp = (char)(nanoseconds%i/(i/10)+48);
+        n++;
         write(desc,&temp,sizeof(char));
-        if (j == 1)
+        if (j == 1 && n<16)
         {
+            n++;
             temp = '.';
             write(desc,&temp,sizeof(char));
             j=0;
@@ -311,15 +303,14 @@ struct timespec time_difference(struct timespec first_time, struct timespec seco
     return diff;
 }
 //////////////////////////////////////////////////////////////
-time_t check_time(struct timespec real_time,float intervals)
+long check_time(struct timespec real_time,float intervals)
 {
     struct timespec now;
-
-    time_t difference = real_time.tv_nsec;
+    long difference = real_time.tv_nsec;
     difference+=real_time.tv_sec*1000000000;
     difference+=intervals;
     clock_gettime(CLOCK_REALTIME,&now);
-    time_t to_diff=now.tv_nsec;
+    long to_diff=now.tv_nsec;
     to_diff+=real_time.tv_sec*1000000000;
     return difference-to_diff;
 }

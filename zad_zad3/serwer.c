@@ -77,8 +77,8 @@ int main(int argc, char** argv)
     }
     len = sizeof(cliaddr);
     int active_clients = 0;
-    int* clients_table = calloc(100, sizeof(int));
-    struct sockaddr_un* clients_addr = calloc(100, sizeof(struct sockaddr_un));
+    int* clients_table = calloc(1000, sizeof(int));
+    struct sockaddr_un* clients_addr = calloc(1000, sizeof(struct sockaddr_un));
     printf("connection\n");
     inet_connection = accept(inet_desc, (struct sockaddr*)&cliaddr, &len);
     if (inet_connection < 0) {
@@ -91,6 +91,7 @@ int main(int argc, char** argv)
     printf("To client function\n");
     client_function(active_clients,clients_table,clients_addr,&desc);
     free(clients_table);
+    close(desc);
     return 0;
 }
 //////////////////////////////////////////////////////////////////
@@ -184,34 +185,38 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             int curr_desc = desc_array[i];
             char c = 0;
             int j = 0;
-            int ret = recv(curr_desc, &c, sizeof(char), 0); // errno control!!!
-            if (ret == -1) {
-                if (errno == ECONNRESET) {
-                    close(curr_desc);
-                    closed_lines[i]=1;
+            int ret = read(curr_desc, &c, sizeof(char));
+            if (ret == -1 || c=='\0') {
+                if (errno == EAGAIN) {
+                    continue;
                 }
-                continue;
+                close(curr_desc);
+                closed_lines[i]=1;
             }
+            int flags = fcntl(curr_desc, F_GETFL);
+            fcntl(curr_desc, F_SETFL, flags & ~O_NONBLOCK);
             buff[j++] = c;
-            recv(curr_desc, &c, 1, 0);
+            read(curr_desc, &c, 1);
             while ('\0' != c) {
 
                 buff[j++] =  c;
-                recv(curr_desc, &c, sizeof(char), 0);
+                read(curr_desc, &c, sizeof(char));
             }
-            printf("write %i\n", i );
             char *separator = " : \n";
-            recv(curr_desc, &adress, sizeof(struct sockaddr_un), 0);
-            recv(curr_desc, &send_time, sizeof(struct timespec), 0);
+            read(curr_desc, &adress, sizeof(struct sockaddr_un));
+            read(curr_desc, &send_time, sizeof(struct timespec));
             clock_gettime(CLOCK_REALTIME, &read_time);
             if (!authorisation(adress, array_addr[i])) continue;
+            printf("write %i\n", i );
             struct timespec diff = time_difference(send_time, read_time);
             print_time(*desc, read_time);
             write(*desc, separator, 3 * sizeof(char));
-            write(*desc, buff, j);
+            write(*desc, buff, j*sizeof(char));
             write(*desc, separator, 3 * sizeof(char));
             print_time(*desc, diff);
             write(*desc, &separator[3], sizeof(char));
+            flags = fcntl(curr_desc, F_GETFL);
+            fcntl(curr_desc, F_SETFL, flags | O_NONBLOCK);
         }
     }
     free(closed_lines);
@@ -252,12 +257,15 @@ void print_time(int desc, struct timespec time)
     write(desc,&temp,sizeof(char));
     int nanoseconds = time.tv_nsec;
     int j =0;
-    for (int i=1000000000;i>1;i/=10)
+    int n = 6;
+    for (int i=1000000000;i>1 ;i/=10)
     {
         temp = (char)(nanoseconds%i/(i/10)+48);
+        n++;
         write(desc,&temp,sizeof(char));
-        if (j == 1)
+        if (j == 1 && n<16)
         {
+            n++;
             temp = '.';
             write(desc,&temp,sizeof(char));
             j=0;
