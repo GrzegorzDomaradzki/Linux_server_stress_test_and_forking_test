@@ -10,12 +10,13 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 void options(int argc, char** argv, int* conections_num, int* port, float* intervals, float* full_time);
 void generate_pathname(char* path);
-void func_inet(int sockfd, struct sockaddr_un server, int* socket_unix,int* active_connections);
+void func_inet(int sockfd, int unix_desc, struct sockaddr_un server, int* socket_unix,int* active_connections);
 void print_time(int desc, struct timespec time);
-void funct_server(int* socket_unix, int active_clients,struct sockaddr_un server_unix);
+void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un server_unix);
 void time_to_text(char* text, struct timespec time);
 struct timespec check_time(struct timespec real_time,float intervals);
 struct timespec time_difference(struct timespec first_time, struct timespec second_time);
@@ -75,7 +76,7 @@ int main(int argc, char** argv)
     printf("After connect\n");
     for (int i=0; i<conections_num;i++)
     {
-        func_inet(sockfd,server_unix,socket_unix,&active_connections);
+        func_inet(sockfd, unix_desc,server_unix,socket_unix,&active_connections);
     }
     printf("After cli_funct\n");
     int control = 0;
@@ -92,9 +93,9 @@ int main(int argc, char** argv)
     end_of_time+=time;
     do
     {
-        clock_gettime(CLOCK_REALTIME,&real_time);
+        clock_gettime(CLOCK_REALTIME,&real_time); //real_time+interval
         funct_server(socket_unix,active_connections,server_unix);
-        rest_time=check_time(real_time,intervals);
+        rest_time=check_time(real_time,intervals); // rest_time = różnica między real_time+intervals, a obecną chwilą. Dla czasu "nadczasu" zwraca dodatnie, opóźnienia - ujemne (w milieskunach)
     }while (clock()<end_of_time) ;
     for (int i=0; i<active_connections;i++) close(socket_unix[i]);
     free(socket_unix);
@@ -107,20 +108,22 @@ int main(int argc, char** argv)
 }
 
 
-void funct_server(int* socket_unix, int active_clients,struct sockaddr_un server_unix)
+void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un server_unix)
 {
     if (!active_clients) return;
     printf("Active client %i\n",active_clients );
-    //printf("%i\n",rand()%active_clients);
-    printf("I'm still alive!!!\n");
-    int socket = socket_unix[/*rand()%active_clients*/0];
-    printf("I'm still alive!!!\n");
+    int socket = socket_unix[rand()%active_clients];
     struct timespec to_send;
     clock_gettime(CLOCK_REALTIME,&to_send);
     char to_send_text[19];
     time_to_text(to_send_text,to_send);
     to_send_text[18]='\0';
-    write(socket,to_send_text,19*sizeof(char));
+    int ret = write(socket,to_send_text,19*sizeof(char));
+    if (ret==-1)
+    {
+        perror("writing fail\n");
+        exit(-1);
+    }
     write(socket,&server_unix,sizeof(struct sockaddr_un));
     write(socket,&to_send,sizeof(struct timespec));
 
@@ -129,11 +132,11 @@ void funct_server(int* socket_unix, int active_clients,struct sockaddr_un server
 //////////////////////////////////////////////////////////////////
 void time_to_text(char* text, struct timespec time)
 {
-    int minutes = time.tv_sec/60;
+    long minutes = time.tv_sec/60;
     text[0] = (char)(minutes % 100 /10+48);
     text[1] = (char)(minutes % 10 + 48);
     text[2] = ':';
-    int seconds = time.tv_sec % 60;
+    long seconds = time.tv_sec % 60;
     text[3] = (char)(seconds /10 +48);
     text[4] = (char)(seconds %10 +48);
     text[5] = ',';
@@ -153,15 +156,18 @@ void time_to_text(char* text, struct timespec time)
     }
 }
 //////////////////////////////////////////////////////////////////
-void func_inet(int sockfd,struct sockaddr_un server,int* socket_unix, int* active_connections)
+void func_inet(int sockfd, int unix_desc, struct sockaddr_un server,int* socket_unix, int* active_connections)
 {
-    struct sockaddr_un return_message;
+    struct sockaddr_un return_message, cli_addr;
+    unsigned len = sizeof(cli_addr);
     int control = 1;
     write(sockfd,&control,sizeof(int));
     write(sockfd,&server,sizeof(struct sockaddr_un));
-    int unix_connection=accept(sockfd,NULL,NULL);
-    read(sockfd,&return_message,sizeof(struct sockaddr_un));
-    if (return_message.sun_family!=-1)
+    int unix_connection=accept(unix_desc,(struct sockaddr*)&cli_addr,&len);
+    printf("%i\n",unix_connection);
+    int x =read(sockfd,&return_message,sizeof(struct sockaddr_un));
+    printf("%i\n",x);
+    if (return_message.sun_family!=USHRT_MAX)
     {
         socket_unix[(*active_connections)++]=unix_connection;
     }
@@ -193,6 +199,10 @@ void options(int argc, char** argv, int* conections_num, int* port, float* inter
             case 'T':
                 *full_time=strtof(optarg,NULL);
                 break;
+
+            default:
+                perror("Unknown flag: valid flags are '-S <value>', '-p <value>', '-d <value>' and '-T <value>'\n");
+                exit(-1);
         }
     }
     if(*port==-1)

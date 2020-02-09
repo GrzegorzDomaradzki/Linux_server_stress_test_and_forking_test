@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <limits.h>
 
 
 
@@ -51,7 +52,8 @@ int main(int argc, char** argv)
     strcpy(prefix,argv[2]);
     int desc = open_log();
     setsig();
-    int inet_desc, inet_connection, len;
+    int inet_desc, inet_connection;
+    unsigned len;
     struct sockaddr_in servaddr, cliaddr;
     inet_desc = socket(AF_INET, SOCK_STREAM, 0);
     if (inet_desc == -1) {
@@ -150,7 +152,7 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
         int ret_val = connect(unix_client, (struct sockaddr *) &unix_server, sizeof(unix_server));
         if (ret_val == -1) {
             printf("FAILED!\n");
-            unix_server.sun_family = -1;
+            unix_server.sun_family = USHRT_MAX;
         } else {
             printf("SUCCESS!\n");
             int flags = fcntl(unix_client, F_GETFL);
@@ -186,7 +188,7 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
                 *desc = open_log();
             }
             int curr_desc = desc_array[i];
-            int c = 0;
+            char c = 0;
             int j = 0;
             printf("%i\n", JP_II++);
             int ret = recv(curr_desc, &c, sizeof(char), 0); // errno control!!!
