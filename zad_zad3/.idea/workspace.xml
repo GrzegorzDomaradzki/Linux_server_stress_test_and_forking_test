@@ -97,7 +97,7 @@
       <workItem from="1581185754302" duration="9444000" />
       <workItem from="1581196326326" duration="4981000" />
       <workItem from="1581243632487" duration="15964000" />
-      <workItem from="1581275855825" duration="4686000" />
+      <workItem from="1581275855825" duration="5386000" />
     </task>
     <task id="LOCAL-00001" summary="Working client-server service.">
       <created>1581197930125</created>
@@ -134,7 +134,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581262050131</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Almost stable, almost working...">
+      <created>1581280571216</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1581280571217</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -159,19 +166,20 @@
     <MESSAGE value="Program ending procedures." />
     <MESSAGE value="Socket communication enabled, sun_family bug fixed - var type is unsigned short, so negative values won't be passed." />
     <MESSAGE value="time_print working." />
-    <option name="LAST_COMMIT_MESSAGE" value="time_print working." />
+    <MESSAGE value="Almost stable, almost working..." />
+    <option name="LAST_COMMIT_MESSAGE" value="Almost stable, almost working..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/klient.c</url>
-          <line>274</line>
+          <line>267</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/klient.c</url>
-          <line>311</line>
+          <line>304</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>

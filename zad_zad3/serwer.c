@@ -33,8 +33,6 @@ void sighandle_out();
 
 int main(int argc, char** argv)
 {
-    //struct sockaddr_un pi;
-    //printf("%i\n",sizeof(pi));
     if(argc!=3)
     {
         perror("Port number required");
@@ -70,7 +68,6 @@ int main(int argc, char** argv)
         perror("socket bind failed");
         exit(0);
     }
-    printf("bind\n");
     if ((listen(inet_desc, 2)) != 0) {
         perror("Listen failed");
         exit(0);
@@ -79,7 +76,6 @@ int main(int argc, char** argv)
     int active_clients = 0;
     int* clients_table = calloc(1000, sizeof(int));
     struct sockaddr_un* clients_addr = calloc(1000, sizeof(struct sockaddr_un));
-    printf("connection\n");
     inet_connection = accept(inet_desc, (struct sockaddr*)&cliaddr, &len);
     if (inet_connection < 0) {
         perror("connection error");
@@ -88,7 +84,6 @@ int main(int argc, char** argv)
     server_function(inet_connection,&active_clients,&clients_table,&clients_addr);
     close(inet_connection);
     close(inet_desc);
-    printf("To client function\n");
     client_function(active_clients,clients_table,clients_addr,&desc);
     free(clients_table);
     close(desc);
@@ -135,7 +130,6 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
     int unix_client;
     int control;
     read(inet_desc,&control,sizeof(int));
-    printf("%i\n",control);
     while(control) {
         memset(&unix_server, 0, sizeof(unix_server));
         memset(&unix_client, 0, sizeof(unix_client));
@@ -148,10 +142,8 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
 
         int ret_val = connect(unix_client, (struct sockaddr *) &unix_server, sizeof(unix_server));
         if (ret_val == -1) {
-            printf("FAILED!\n");
             unix_server.sun_family = USHRT_MAX;
         } else {
-            printf("SUCCESS!\n");
             int flags = fcntl(unix_client, F_GETFL);
             fcntl(unix_client, F_SETFL, flags | O_NONBLOCK);
             table_desc[0][*client_num] = unix_client;
@@ -161,7 +153,6 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
         }
         write(inet_desc, &unix_server, sizeof(unix_server));
         read(inet_desc,&control,sizeof(int));
-        printf("%i\n",control);
     }
 }
 //////////////////////////////////////////////////////////////////
@@ -207,7 +198,6 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             read(curr_desc, &send_time, sizeof(struct timespec));
             clock_gettime(CLOCK_REALTIME, &read_time);
             if (!authorisation(adress, array_addr[i])) continue;
-            printf("write %i\n", i );
             struct timespec diff = time_difference(send_time, read_time);
             print_time(*desc, read_time);
             write(*desc, separator, 3 * sizeof(char));

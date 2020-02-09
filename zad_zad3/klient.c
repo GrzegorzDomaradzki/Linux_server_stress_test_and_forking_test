@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
+
 
 void options(int argc, char** argv, int* conections_num, int* port, float* intervals, float* full_time);
 void generate_pathname(char* path);
@@ -68,26 +68,21 @@ int main(int argc, char** argv)
 
     int* socket_unix = calloc(1000, sizeof(int));
     int active_connections =0;
-    printf("Before connect\n");
     if (connect(sockfd, (struct sockaddr*)&server_inet, sizeof(server_inet)) != 0) {
         perror("connection with the server failed.");
         exit(-1);
     }
-    printf("After connect\n");
     for (int i=0; i<conections_num;i++)
     {
         func_inet(sockfd, unix_desc,server_unix,socket_unix,&active_connections);
     }
-    printf("After cli_funct\n");
     int control = 0;
     write(sockfd,&control,sizeof(int));
-    printf("LAST\n");
     close(sockfd);
     struct timespec real_time,rest_time,all_time;
     long rest,max=0,min=LONG_MAX;
     long time = clock();
     long end_of_time = ((long)full_time/100)*CLOCKS_PER_SEC;
-    printf("%li, %li, %li\n",CLOCKS_PER_SEC,(long)full_time,end_of_time);
     end_of_time+=time;
     clock_gettime(CLOCK_REALTIME,&all_time);
     do
@@ -113,8 +108,8 @@ int main(int argc, char** argv)
     free(socket_unix);
     printf("Full message sending time:\n");
     print_time(0,time_difference(all_time,real_time));
-    printf("\nShortest message time - useconds: %li\n",min);
-    printf("\nLongest message time - useconds: %li\n",max);
+    printf("\nShortest message time - seconds: %li microseconds: %li\n",min/1000000000,min%1000000000);
+    printf("\nLongest message time - seconds: %li microseconds: %li\n",min/1000000000,min%1000000000);
     printf("\n");
     return 0;
 }
@@ -178,9 +173,7 @@ void func_inet(int sockfd, int unix_desc, struct sockaddr_un server,int* socket_
     write(sockfd,&control,sizeof(int));
     write(sockfd,&server,sizeof(struct sockaddr_un));
     int unix_connection=accept(unix_desc,(struct sockaddr*)&cli_addr,&len);
-    printf("%i\n",unix_connection);
     int x =read(sockfd,&return_message,sizeof(struct sockaddr_un));
-    printf("%i\n",x);
     if (return_message.sun_family!=USHRT_MAX)
     {
         socket_unix[(*active_connections)++]=unix_connection;
