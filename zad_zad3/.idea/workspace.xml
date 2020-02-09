@@ -2,9 +2,9 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
+      <config projectName="zad_zad3" targetName="cl" />
       <config projectName="zad_zad3" targetName="zad_zad3" />
       <config projectName="zad_zad3" targetName="sr" />
-      <config projectName="zad_zad3" targetName="cl" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -15,7 +15,6 @@
   <component name="ChangeListManager">
     <list default="true" id="28b6b1d2-6242-4af1-a2ea-c35371b52ae2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klient.c" beforeDir="false" afterPath="$PROJECT_DIR$/klient.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/serwer.c" beforeDir="false" afterPath="$PROJECT_DIR$/serwer.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -95,7 +94,8 @@
       <option name="presentableId" value="Default" />
       <updated>1581185752168</updated>
       <workItem from="1581185754302" duration="9444000" />
-      <workItem from="1581196326326" duration="4821000" />
+      <workItem from="1581196326326" duration="4981000" />
+      <workItem from="1581243632487" duration="2110000" />
     </task>
     <task id="LOCAL-00001" summary="Working client-server service.">
       <created>1581197930125</created>
@@ -104,7 +104,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581197930125</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Debugging commit...">
+      <created>1581201284005</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1581201284005</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -115,7 +122,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
@@ -123,7 +132,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Working client-server service." />
-    <option name="LAST_COMMIT_MESSAGE" value="Working client-server service." />
+    <MESSAGE value="Debugging commit..." />
+    <option name="LAST_COMMIT_MESSAGE" value="Debugging commit..." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -132,11 +142,6 @@
           <url>file://$PROJECT_DIR$/klient.c</url>
           <line>231</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/serwer.c</url>
-          <line>174</line>
-          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

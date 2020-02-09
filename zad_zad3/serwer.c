@@ -86,12 +86,8 @@ int main(int argc, char** argv)
     server_function(inet_connection,&active_clients,&clients_table,&clients_addr);
     close(inet_connection);
     close(inet_desc);
-    while(!out)
-    {
-        printf("To client function\n");
-        client_function(active_clients,clients_table,clients_addr,&desc);
-
-    }
+    printf("To client function\n");
+    client_function(active_clients,clients_table,clients_addr,&desc);
     for (int i=0;i<active_clients;i++)
     {
         close(clients_table[i]);
@@ -174,50 +170,61 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
 {
     struct timespec send_time, read_time;
     struct sockaddr_un adress;
-    int JP_II = 0;
-    for (int i=0; i<client_num;i++)
-    {
-        char buff [256];
-        printf("%i\n",JP_II++);
-        memset(buff, 0, sizeof(char)*256);
-        if (log_changed)
-        {
-            close(*desc);
-            *desc = open_log();
-        }
-        int curr_desc = desc_array[i];
-        int c;
-        int j =0;
-        printf("%i\n",JP_II++);
-        int ret = read(curr_desc,&c,1); // errno control!!!
-        char cccc[80];
-        strcpy(cccc,strerror(errno));
-        if (ret==-1) continue;
-        buff[j++]=c;
-        read(curr_desc,&c,1);
-        while('\0'!=c)
-        {
-            buff[j++]=(char)c;
-            read(curr_desc,&c,1);
-        }
+    int* closed_lines = calloc(client_num,sizeof(int));
+    int client_quit = 0;
+    while(!out && !client_quit) {
+        int JP_II = 0;
+        client_quit =1;
+        for (int i = 0; i < client_num; i++) {
+            if (closed_lines[i]) continue;
+            client_quit =0;
+            char buff[256];
+            printf("%i\n", JP_II++);
+            memset(buff, 0, sizeof(char) * 256);
+            if (log_changed) {
+                close(*desc);
+                *desc = open_log();
+            }
+            int curr_desc = desc_array[i];
+            int c = 0;
+            int j = 0;
+            printf("%i\n", JP_II++);
+            int ret = recv(curr_desc, &c, sizeof(char), 0); // errno control!!!
+            char cccc[80];
+            strcpy(cccc, strerror(errno));
+            if (ret == -1) {
+                if (errno == ECONNRESET) {
+                    closed_lines[i]=1;
+                }
+                continue;
+            }
+            buff[j++] = c;
+            recv(curr_desc, &c, 1, 0);
+            while ('\0' != c) {
 
-        char* separator = " : \n";
-        read(curr_desc,&adress,sizeof(struct sockaddr_un));
-        read(curr_desc,&send_time,sizeof(struct timespec));
-        printf("%i\n",JP_II++);
-        clock_gettime(CLOCK_REALTIME,&read_time);
-        printf("%i\n",JP_II++);
-        if(!authorisation(adress,array_addr[i])) continue;
-        struct timespec diff = time_difference(send_time, read_time);
-        print_time(*desc, read_time);
-        write(*desc,separator,3);
-        write(*desc,buff,j);
-        write(*desc,separator,3);
-        print_time(*desc,diff);
-        write(*desc,&separator[3],1);
-        printf("%i\n",JP_II++);
+                buff[j++] = (char) c;
+                ret = recv(curr_desc, &c, sizeof(char), 0);
+            }
+
+            char *separator = " : \n";
+            recv(curr_desc, &adress, sizeof(struct sockaddr_un), 0);
+            recv(curr_desc, &send_time, sizeof(struct timespec), 0);
+            printf("%i\n", JP_II++);
+            clock_gettime(CLOCK_REALTIME, &read_time);
+            printf("%i\n", JP_II++);
+            if (!authorisation(adress, array_addr[i])) continue;
+            struct timespec diff = time_difference(send_time, read_time);
+            print_time(*desc, read_time);
+            write(*desc, separator, 3 * sizeof(char));
+            write(*desc, buff, j);
+            write(*desc, separator, 3 * sizeof(char));
+            print_time(*desc, diff);
+            write(*desc, &separator[3], sizeof(char));
+            printf("%i\n", JP_II++);
+        }
+        printf("%i\n", JP_II++);
     }
-    printf("%i\n",JP_II++);
+    free(closed_lines);
 }
 //////////////////////////////////////////////////////////////////
 struct timespec time_difference(struct timespec first_time, struct timespec second_time)
