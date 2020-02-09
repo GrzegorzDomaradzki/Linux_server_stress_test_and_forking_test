@@ -90,10 +90,6 @@ int main(int argc, char** argv)
     close(inet_desc);
     printf("To client function\n");
     client_function(active_clients,clients_table,clients_addr,&desc);
-    for (int i=0;i<active_clients;i++)
-    {
-        close(clients_table[i]);
-    }
     free(clients_table);
     return 0;
 }
@@ -175,13 +171,11 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
     int* closed_lines = calloc(client_num,sizeof(int));
     int client_quit = 0;
     while(!out && !client_quit) {
-        int JP_II = 0;
         client_quit =1;
         for (int i = 0; i < client_num; i++) {
             if (closed_lines[i]) continue;
             client_quit =0;
             char buff[256];
-            printf("%i\n", JP_II++);
             memset(buff, 0, sizeof(char) * 256);
             if (log_changed) {
                 close(*desc);
@@ -190,12 +184,10 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             int curr_desc = desc_array[i];
             char c = 0;
             int j = 0;
-            printf("%i\n", JP_II++);
             int ret = recv(curr_desc, &c, sizeof(char), 0); // errno control!!!
-            char cccc[80];
-            strcpy(cccc, strerror(errno));
             if (ret == -1) {
                 if (errno == ECONNRESET) {
+                    close(curr_desc);
                     closed_lines[i]=1;
                 }
                 continue;
@@ -204,16 +196,14 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             recv(curr_desc, &c, 1, 0);
             while ('\0' != c) {
 
-                buff[j++] = (char) c;
-                ret = recv(curr_desc, &c, sizeof(char), 0);
+                buff[j++] =  c;
+                recv(curr_desc, &c, sizeof(char), 0);
             }
-
+            printf("write %i\n", i );
             char *separator = " : \n";
             recv(curr_desc, &adress, sizeof(struct sockaddr_un), 0);
             recv(curr_desc, &send_time, sizeof(struct timespec), 0);
-            printf("%i\n", JP_II++);
             clock_gettime(CLOCK_REALTIME, &read_time);
-            printf("%i\n", JP_II++);
             if (!authorisation(adress, array_addr[i])) continue;
             struct timespec diff = time_difference(send_time, read_time);
             print_time(*desc, read_time);
@@ -222,9 +212,7 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             write(*desc, separator, 3 * sizeof(char));
             print_time(*desc, diff);
             write(*desc, &separator[3], sizeof(char));
-            printf("%i\n", JP_II++);
         }
-        printf("%i\n", JP_II++);
     }
     free(closed_lines);
 }
@@ -248,15 +236,14 @@ struct timespec time_difference(struct timespec first_time, struct timespec seco
 //////////////////////////////////////////////////////////////////
 void print_time(int desc, struct timespec time)
 {
-    desc =0;
-    int minutes = time.tv_sec/60;
+    long minutes = time.tv_sec/60;
     char temp = (char)(minutes % 100 /10+48);
     write(desc,&temp,sizeof(char));
     temp = (char)(minutes % 10 + 48);
     write(desc,&temp,sizeof(char));
     temp = ':';
     write(desc,&temp,sizeof(char));
-    int seconds = time.tv_sec % 60;
+    long seconds = time.tv_sec % 60;
     temp = (char)(seconds /10 +48);
     write(desc,&temp,sizeof(char));
     temp = (char)(seconds %10 +48);

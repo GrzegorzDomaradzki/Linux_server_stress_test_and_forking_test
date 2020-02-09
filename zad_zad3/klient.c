@@ -18,12 +18,12 @@ void func_inet(int sockfd, int unix_desc, struct sockaddr_un server, int* socket
 void print_time(int desc, struct timespec time);
 void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un server_unix);
 void time_to_text(char* text, struct timespec time);
-struct timespec check_time(struct timespec real_time,float intervals);
+time_t check_time(struct timespec real_time,float intervals);
 struct timespec time_difference(struct timespec first_time, struct timespec second_time);
 
 int main(int argc, char** argv)
 {
-    srand(time(NULL));
+    srand(time(CLOCK_REALTIME));
     int sockfd, connfd;
     struct sockaddr_in server_inet, cli;
     struct sockaddr_un server_unix;
@@ -83,27 +83,52 @@ int main(int argc, char** argv)
     write(sockfd,&control,sizeof(int));
     printf("LAST\n");
     close(sockfd);
-    struct timespec real_time,min_time,max_time,rest_time;
-    max_time.tv_nsec=999999999;
-    max_time.tv_sec=LONG_MAX;
-    min_time.tv_nsec=0;
-    min_time.tv_sec=0;
+    struct timespec real_time,rest_time,all_time;
+    long rest,max=0,min=LONG_MAX;
     clock_t time = clock();
     clock_t end_of_time = (clock_t)(full_time/100)*CLOCKS_PER_SEC;
     end_of_time+=time;
+    clock_gettime(CLOCK_REALTIME,&all_time);
     do
     {
         clock_gettime(CLOCK_REALTIME,&real_time); //real_time+interval
         funct_server(socket_unix,active_connections,server_unix);
-        rest_time=check_time(real_time,intervals); // rest_time = różnica między real_time+intervals, a obecną chwilą. Dla czasu "nadczasu" zwraca dodatnie, opóźnienia - ujemne (w milieskunach)
-    }while (clock()<end_of_time) ;
+        rest=check_time(real_time,intervals); // rest_time = różnica między real_time+intervals, a obecną chwilą. Dla czasu "nadczasu" zwraca dodatnie, opóźnienia - ujemne (w milieskunach)
+        if(rest>max) max=rest;
+        if(rest<min) min=rest;
+        if(rest>0) {
+            rest_time.tv_sec = rest / 1000000000;
+            rest_time.tv_nsec = rest % 1000000000;
+            nanosleep(&rest_time, NULL);
+            end_of_time-=rest*1000000000/CLOCKS_PER_SEC;
+        }
+    }while (/*clock()<end_of_time*/0) ;
+    clock_gettime(CLOCK_REALTIME,&real_time);
     for (int i=0; i<active_connections;i++) close(socket_unix[i]);
     free(socket_unix);
-    //printf("Full message sending time: %f\nShortest message time: ", ???);
-    //print_time(0,min_time);
-    //printf("\nLongest message time: ");
-    //print_time(0,min_time);
-    //printf("\n");
+    printf("Full message sending time:\n");
+    print_time(0,time_difference(all_time,real_time));
+    printf("\nShortest message time:\n");
+    if (min<0) 
+    {
+        min*=-1;
+        char c = '-';
+        write(0,&c, sizeof(char));
+    }
+    real_time.tv_sec=min/1000000000;
+    real_time.tv_nsec=min%1000000000;
+    print_time(0,real_time);
+    printf("\nLongest message time:\n");
+    if (max<0)
+    {
+        max*=-1;
+        char c = '-';
+        write(0,&c, sizeof(char));
+    }
+    real_time.tv_sec=max/1000000000;
+    real_time.tv_nsec=max%1000000000;
+    print_time(0,real_time);
+    printf("\n");
     return 0;
 }
 
@@ -177,8 +202,8 @@ void options(int argc, char** argv, int* conections_num, int* port, float* inter
 {
     *conections_num=5;
     *port =-1;
-    *intervals = 50;
-    *full_time = 1000;
+    *intervals = 5000;
+    *full_time = 100;
     char c;
     while ((c = getopt (argc, argv, "S:p:d:T:")) != -1)
     {
@@ -286,12 +311,15 @@ struct timespec time_difference(struct timespec first_time, struct timespec seco
     return diff;
 }
 //////////////////////////////////////////////////////////////
-struct timespec check_time(struct timespec real_time,float intervals)
+time_t check_time(struct timespec real_time,float intervals)
 {
-    struct timespec to_diff;
+    struct timespec now;
 
-    to_diff.tv_nsec=((time_t)intervals+real_time.tv_nsec)%1000000000;
-    to_diff.tv_sec=((time_t)intervals+real_time.tv_sec)/1000000000;
-    if((time_t)intervals+real_time.tv_nsec<1000000000) to_diff.tv_sec++;
-    return time_difference(real_time, to_diff);
+    time_t difference = real_time.tv_nsec;
+    difference+=real_time.tv_sec*1000000000;
+    difference+=intervals;
+    clock_gettime(CLOCK_REALTIME,&now);
+    time_t to_diff=now.tv_nsec;
+    to_diff+=real_time.tv_sec*1000000000;
+    return difference-to_diff;
 }
