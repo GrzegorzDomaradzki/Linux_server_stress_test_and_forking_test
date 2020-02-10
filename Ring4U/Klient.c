@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 
+
 void karmnik(char* FI, char* FO);
 void ring4u();
 void setsig();
@@ -90,27 +91,27 @@ void forking()
 
 void karmnik(char* FI, char* FO)
 {
-    struct timespec to_sleep;
-    to_sleep.tv_sec=0;
-    int desc = open(FO,O_RDONLY|O_NONBLOCK);
-    while(!desc && errno==ENXIO)
-    {
-        to_sleep.tv_nsec=rand()/1000;
-        nanosleep(&to_sleep,NULL);
-        desc = open(FO,O_RDONLY|O_NONBLOCK);
-    }
 
-    while(!fight)
-    {
-        to_sleep.tv_nsec=rand()/1000;
-        nanosleep(&to_sleep,NULL);
-        if (children>=3 && !fight)
-        {
-            sign_in(FI);
-            continue;
+    struct timespec to_sleep;
+    to_sleep.tv_sec = 0;
+    int desc = open(FO, O_RDONLY | O_NONBLOCK);
+    while (!desc && errno == ENXIO) {
+        to_sleep.tv_nsec = rand() / 100;
+        nanosleep(&to_sleep, NULL);
+        desc = open(FO, O_RDONLY | O_NONBLOCK);
         }
-        char pass = 0;
-        if(-1!=read(desc,&pass, sizeof(char)) && !fight) forking();
+    to_sleep.tv_nsec = rand() / 1000;
+    while(1) {
+        while (!fight) {
+            nanosleep(&to_sleep, NULL);
+            if (children >= 3 && !fight) {
+                sign_in(FI);
+                continue;
+            }
+            char pass = 0;
+            if (-1 != read(desc, &pass, sizeof(char)) && !fight) forking();
+            to_sleep.tv_nsec = rand() / 1000;
+        }
+        ring4u();
     }
-    ring4u();
 }
