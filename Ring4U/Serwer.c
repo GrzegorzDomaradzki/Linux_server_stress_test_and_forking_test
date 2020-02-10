@@ -4,12 +4,18 @@
 #include <fcntl.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
 
 void make_fifo(char* FI, char* FO);
 void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_open_time);
 void give_food(int FO_desc,long max_recruit_num);
 void read_letters(char* FI,struct timespec sign_in_open_time);
 void give_them_hell(int* good_fathers,int* goons);
+int make_arbiter();
+int is_epmty(int FO_desc,char* FO);
+
+int arbiter_pid;
+int fight=0;
 
 int main(int argc, char** argv)
 {
@@ -47,8 +53,24 @@ int main(int argc, char** argv)
     }
     long sign_in_open_time = strtol(var,NULL,10);
     make_fifo(FI,FO);
+    if(-1==make_arbiter())
+    {
+        perror("Arbiter making error");
+        exit(-1);
+    }
     feed_them(FI,FO,delay,max_recruit_num,sign_in_open_time);
     return 0;
+}
+
+int make_arbiter()
+{
+    int pid = fork();
+    if(pid==0)
+    {
+        execlp("./Arbiter","Arbiter",NULL);
+    }
+    arbiter_pid=pid;
+    return pid;
 }
 
 void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_open_time)
@@ -65,10 +87,12 @@ void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_op
         perror("Can't open FIFO (FO) file");
         exit(-1);
     }
-    while()
+    while(1)
     {
-        give_food(FO_desc,max_recruit_num);
-        read_letters(FI,sleep_open_time);
+        if(is_epmty(FO_desc,FO)) give_food(FO_desc,max_recruit_num);
+        if(!fight) {
+            read_letters(FI, sleep_open_time);
+        }
     }
 }
 
@@ -80,6 +104,21 @@ void give_food(int FO_desc,long max_recruit_num)
     {
         write(FO_desc,&c,sizeof(char));
     }
+}
+
+int is_epmty(int FO_desc,char* FO)
+{
+    int desc = open(FO,O_RDONLY|O_NONBLOCK);
+    int c;
+    int ret = read(desc,&c,sizeof(char));
+    if (ret==-1) return 1;
+    ret = write(FO_desc,&c,sizeof(char));
+    if(ret==-1)
+    {
+        printf("Something very bad happened to your FIFO file...");
+        exit(-1);
+    }
+    return 0;
 }
 
 void read_letters(char* FI,struct timespec sign_in_open_time)
@@ -109,7 +148,17 @@ void read_letters(char* FI,struct timespec sign_in_open_time)
 
 void give_them_hell(int* good_fathers,int* goons)
 {
-
+    union sigval first,second;
+    struct timespec to_sleep;
+    to_sleep.tv_sec=0;
+    to_sleep.tv_nsec=100;
+    first.sival_int=goons[1];
+    second.sival_int=goons[0];
+    sigqueue(good_fathers[0],SIGRTMIN+13,first);
+    sigqueue(good_fathers[1],SIGRTMIN+13,second);
+    nanosleep(&to_sleep,NULL);
+    kill(arbiter_pid,SIGRTMIN+13);
+    fight=1;
 }
 
 
