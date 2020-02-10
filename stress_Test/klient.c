@@ -118,23 +118,20 @@ int main(int argc, char** argv)
 void funct_server(const int* socket_unix, int active_clients,struct sockaddr_un server_unix)
 {
     if (!active_clients) return;
-    printf("Active client %i\n",active_clients );
     int socket = socket_unix[rand()%active_clients];
-    printf("write to %i\n",socket);
     struct timespec to_send;
     clock_gettime(CLOCK_REALTIME,&to_send);
     char to_send_text[19];
     time_to_text(to_send_text,to_send);
     to_send_text[18]='\0';
-    printf("%s\n",to_send_text);
     int ret = write(socket,to_send_text,19*sizeof(char));
     if (ret==-1)
     {
         perror("writing fail\n");
         exit(-1);
     }
-    write(socket,&server_unix,sizeof(struct sockaddr_un));
-    write(socket,&to_send,sizeof(struct timespec));
+    (void) write(socket,&server_unix,sizeof(struct sockaddr_un));
+    (void) write(socket,&to_send,sizeof(struct timespec));
 
 }
 
@@ -170,10 +167,10 @@ void func_inet(int sockfd, int unix_desc, struct sockaddr_un server,int* socket_
     struct sockaddr_un return_message, cli_addr;
     unsigned len = sizeof(cli_addr);
     int control = 1;
-    write(sockfd,&control,sizeof(int));
-    write(sockfd,&server,sizeof(struct sockaddr_un));
+    (void) write(sockfd,&control,sizeof(int));
+    (void) write(sockfd,&server,sizeof(struct sockaddr_un));
     int unix_connection=accept(unix_desc,(struct sockaddr*)&cli_addr,&len);
-    int x =read(sockfd,&return_message,sizeof(struct sockaddr_un));
+    (void) read(sockfd,&return_message,sizeof(struct sockaddr_un));
     if (return_message.sun_family!=USHRT_MAX)
     {
         socket_unix[(*active_connections)++]=unix_connection;
@@ -248,18 +245,18 @@ void print_time(int desc, struct timespec time)
 {
     int minutes = time.tv_sec/60;
     char temp = (char)(minutes % 100 /10+48);
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     temp = (char)(minutes % 10 + 48);
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     temp = ':';
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     int seconds = time.tv_sec % 60;
     temp = (char)(seconds /10 +48);
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     temp = (char)(seconds %10 +48);
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     temp = ',';
-    write(desc,&temp,sizeof(char));
+    (void) write(desc,&temp,sizeof(char));
     int nanoseconds = time.tv_nsec;
     int j =0;
     int n = 6;
@@ -267,12 +264,12 @@ void print_time(int desc, struct timespec time)
     {
         temp = (char)(nanoseconds%i/(i/10)+48);
         n++;
-        write(desc,&temp,sizeof(char));
+        (void) write(desc,&temp,sizeof(char));
         if (j == 1 && n<16)
         {
             n++;
             temp = '.';
-            write(desc,&temp,sizeof(char));
+            (void) write(desc,&temp,sizeof(char));
             j=0;
         }
         else

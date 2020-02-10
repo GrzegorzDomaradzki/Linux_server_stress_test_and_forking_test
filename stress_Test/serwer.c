@@ -103,7 +103,7 @@ int open_log()
     {
         char f_name[83];
         sprintf(f_name,"%s%03d",prefix,log_nr);
-        desc = open(f_name,O_RDWR|O_CREAT|O_TRUNC);
+        desc = open(f_name,O_RDWR|O_CREAT|O_TRUNC,0666);
         if (desc >=0) break;
         ++log_nr;
     }
@@ -129,11 +129,11 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
     struct sockaddr_un unix_server;
     int unix_client;
     int control;
-    read(inet_desc,&control,sizeof(int));
+    (void)read(inet_desc,&control,sizeof(int));
     while(control) {
         memset(&unix_server, 0, sizeof(unix_server));
         memset(&unix_client, 0, sizeof(unix_client));
-        read(inet_desc, &unix_server, sizeof(struct sockaddr_un));
+        (void)read(inet_desc, &unix_server, sizeof(struct sockaddr_un));
         //make unix client
         if (-1 == (unix_client = socket(AF_UNIX, SOCK_STREAM, 0))) {
             perror("error while creating unix_client socket");
@@ -151,8 +151,8 @@ void server_function(int inet_desc, int* client_num, int** table_desc,struct soc
             ++(*client_num);
             //resize table
         }
-        write(inet_desc, &unix_server, sizeof(unix_server));
-        read(inet_desc,&control,sizeof(int));
+        (void)write(inet_desc, &unix_server, sizeof(unix_server));
+        (void)read(inet_desc,&control,sizeof(int));
     }
 }
 //////////////////////////////////////////////////////////////////
@@ -187,24 +187,24 @@ void client_function(int client_num, int* desc_array , struct sockaddr_un* array
             int flags = fcntl(curr_desc, F_GETFL);
             fcntl(curr_desc, F_SETFL, flags & ~O_NONBLOCK);
             buff[j++] = c;
-            read(curr_desc, &c, 1);
+            (void)read(curr_desc, &c, 1);
             while ('\0' != c) {
 
                 buff[j++] =  c;
-                read(curr_desc, &c, sizeof(char));
+                (void)read(curr_desc, &c, sizeof(char));
             }
             char *separator = " : \n";
-            read(curr_desc, &adress, sizeof(struct sockaddr_un));
-            read(curr_desc, &send_time, sizeof(struct timespec));
+            (void)read(curr_desc, &adress, sizeof(struct sockaddr_un));
+            (void)read(curr_desc, &send_time, sizeof(struct timespec));
             clock_gettime(CLOCK_REALTIME, &read_time);
             if (!authorisation(adress, array_addr[i])) continue;
             struct timespec diff = time_difference(send_time, read_time);
             print_time(*desc, read_time);
-            write(*desc, separator, 3 * sizeof(char));
-            write(*desc, buff, j*sizeof(char));
-            write(*desc, separator, 3 * sizeof(char));
+            (void)write(*desc, separator, 3 * sizeof(char));
+            (void)write(*desc, buff, j*sizeof(char));
+            (void)write(*desc, separator, 3 * sizeof(char));
             print_time(*desc, diff);
-            write(*desc, &separator[3], sizeof(char));
+            (void)write(*desc, &separator[3], sizeof(char));
             flags = fcntl(curr_desc, F_GETFL);
             fcntl(curr_desc, F_SETFL, flags | O_NONBLOCK);
         }
@@ -233,18 +233,18 @@ void print_time(int desc, struct timespec time)
 {
     long minutes = time.tv_sec/60;
     char temp = (char)(minutes % 100 /10+48);
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     temp = (char)(minutes % 10 + 48);
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     temp = ':';
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     long seconds = time.tv_sec % 60;
     temp = (char)(seconds /10 +48);
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     temp = (char)(seconds %10 +48);
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     temp = ',';
-    write(desc,&temp,sizeof(char));
+    (void)write(desc,&temp,sizeof(char));
     int nanoseconds = time.tv_nsec;
     int j =0;
     int n = 6;
@@ -252,12 +252,12 @@ void print_time(int desc, struct timespec time)
     {
         temp = (char)(nanoseconds%i/(i/10)+48);
         n++;
-        write(desc,&temp,sizeof(char));
+        (void)write(desc,&temp,sizeof(char));
         if (j == 1 && n<16)
         {
             n++;
             temp = '.';
-            write(desc,&temp,sizeof(char));
+            (void)write(desc,&temp,sizeof(char));
             j=0;
         }
         else
