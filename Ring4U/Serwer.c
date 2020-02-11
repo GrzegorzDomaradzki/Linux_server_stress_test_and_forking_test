@@ -18,6 +18,8 @@ void sighandle(int, siginfo_t *, void *);
 
 int arbiter_pid;
 int fight=0;
+int winner_reported=0;
+int looser_reported=0;
 
 int main(int argc, char** argv)
 {
@@ -181,7 +183,7 @@ void make_fifo(char* FI, char* FO)
 }
 
 
-void setsig()
+void set_sig()
 {
     struct sigaction new_action, new_action2;
     new_action.sa_sigaction = sighandle;
@@ -194,6 +196,17 @@ void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable)
 {
     if(signal_info->si_value.sival_int)
     {
-
+    winner_reported =1;
+    }
+    else
+    {
+     looser_reported=1;
+    }
+    if(winner_reported && looser_reported)
+    {
+        winner_reported=0;
+        looser_reported=0;
+        fight=0;
+        kill(arbiter_pid,SIGRTMIN+13);
     }
 }

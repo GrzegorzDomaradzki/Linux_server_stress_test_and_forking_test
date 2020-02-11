@@ -6,17 +6,21 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <wait.h>
 
 
 void karmnik(char* FI, char* FO);
 void setsig();
 void sighandle(int, siginfo_t *, void *);
-void find_child(int, siginfo_t *, void *);
+
 void sign_in(char* file);
 int forking(int** child_table,int size);
 void ring4u( int** child_table,int* table_size);
+void surrender(int** child_table,int* table_size);
+void kill_witness(int** child_table,int* table_size,int initial_number);
+void count_bodies();
 
-int to_change=-1;
+
 int fight=0;
 int win=1;
 int children=0;
@@ -50,9 +54,6 @@ void setsig()
     new_action.sa_sigaction = sighandle;
     sigemptyset (&new_action.sa_mask);
     sigaction(SIGRTMIN+13,&new_action,NULL);
-    new_action2.sa_sigaction = find_child;
-    sigemptyset (&new_action2.sa_mask);
-    sigaction(SIGBUS,&new_action2,NULL);
 }
 
 
@@ -162,12 +163,56 @@ void ring4u( int** child_table,int* table_size)
     {
         if(win)
         {
-            to_send.sival_int=1;
-            sigqueue(server_pid,SIGRTMIN+13,to_send);
-            kill_witness(child_table,table_size);
+            kill_witness(child_table,table_size,init_children_num);
         } else {
             count_bodies();
-            if(!children) surrender(child_table,table_size,init_children_num);
+            if(!children) surrender(child_table,table_size);
         }
     }
+}
+
+void surrender(int** child_table,int* table_size)
+{
+    union sigval to_send;
+    to_send.sival_int = 0;
+    sigqueue(server_pid,SIGRTMIN+13,to_send);
+    *table_size=16;
+    *child_table=realloc(*child_table, sizeof(int)*16);
+    fight=0;
+}
+
+void kill_witness(int** child_table,int* table_size,int initial_number)
+{
+    union sigval to_send;
+    to_send.sival_int=1;
+    sigqueue(server_pid,SIGRTMIN+13,to_send);
+    siginfo_t control, zeros;
+    memset(&zeros, 0, sizeof(siginfo_t));
+    int cmp;
+    int res;
+    do {
+        memset(&control, 0, sizeof(siginfo_t));
+        res = waitid(P_PGID,pgid,&control,WEXITED|WNOHANG);
+        cmp = memcmp(&control,&zeros,sizeof(siginfo_t));
+        if(!res && cmp) children--;
+    }while(cmp && !res);
+    for(int i=0;i<initial_number;i++)
+    {
+        if(!kill(*child_table[i],SIGTERM))
+        {
+            waitid(P_PID,*child_table[i],NULL,WEXITED);
+        }
+    }
+    initial_number=children;
+    children=0;
+    *table_size=16;
+    *child_table=realloc(*child_table,16*sizeof(int));
+    for(int i=0;i<initial_number;i++) *table_size=forking(child_table,*table_size);
+    fight=0;
+}
+
+void count_bodies()
+{
+    int res = waitid(P_PGID,pgid,NULL,WEXITED);
+    if (!res) children--;
 }

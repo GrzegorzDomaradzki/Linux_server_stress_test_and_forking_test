@@ -88,7 +88,7 @@ int choose_sig()
     return SIGUSR2;
 }
 
-void action_asked(int signal, siginfo_t * signal_info, void * some_weird_variable)
+void sigaction_asked(int signal, siginfo_t * signal_info, void * some_weird_variable)
 {
     int sender = signal_info->si_pid;
     kill(sender,SIGBUS);
