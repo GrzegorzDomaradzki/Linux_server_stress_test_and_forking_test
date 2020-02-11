@@ -22,7 +22,7 @@ int print_time(char end)
     clock_gettime(CLOCK_REALTIME,&time);
     int minutes = (int)time.tv_sec/60;
     char temp = (char)(minutes % 100 /10+48);
-    (void)write(_log_maker_desc,&temp,sizeof(char)));
+    (void)write(_log_maker_desc,&temp,sizeof(char));
     temp = (char)(minutes % 10 + 48);
     (void) write(_log_maker_desc,&temp,sizeof(char));
     temp = ':';
