@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>
+#include "log_maker.h"
 
 void make_fifo(char* FI, char* FO);
 void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_open_time);

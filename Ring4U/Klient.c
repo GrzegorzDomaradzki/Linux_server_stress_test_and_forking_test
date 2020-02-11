@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 #include <wait.h>
+#include "log_maker.h"
 
 
 void karmnik(char* FI, char* FO);

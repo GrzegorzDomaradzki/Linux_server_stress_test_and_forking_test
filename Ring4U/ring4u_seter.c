@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "log_maker.h"
 
 int set_options(int argc,char** argv);
 void run_klients(int num_of_clients);

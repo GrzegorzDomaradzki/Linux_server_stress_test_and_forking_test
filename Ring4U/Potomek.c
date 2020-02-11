@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <signal.h>
+#include "log_maker.h"
 
 void setsig();
 void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable);

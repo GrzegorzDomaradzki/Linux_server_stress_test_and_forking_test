@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include "log_maker.h"
 
 void attack();
 void defend();

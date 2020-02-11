@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
+#include "log_maker.h"
 
 void setsig();
 void sighandle();
