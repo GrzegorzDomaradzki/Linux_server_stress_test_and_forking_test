@@ -7,7 +7,7 @@
 #include <time.h>
 
 void setsig();
-void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable);
+void sighandle();
 void totem(struct timespec to_open, struct timespec to_close,char* path);
 struct timespec to_time(long microseconds);
 
@@ -64,7 +64,7 @@ void setsig()
 }
 
 
-void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable)
+void sighandle()
 {
     i=!i;
 }
@@ -82,6 +82,7 @@ void totem(struct timespec to_open, struct timespec to_close,char* path)
     if(!i)
     {
         pause();
+        nanosleep(&to_close,NULL);
     }
     int desc = open(path,O_RDONLY|O_NONBLOCK);
     nanosleep(&to_open,NULL);

@@ -98,7 +98,7 @@ void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_op
 
 void give_food(int FO_desc,long max_recruit_num)
 {
-    int packs = (int)(rand()/max_recruit_num);
+    int packs = (int)(rand()%max_recruit_num);
     char c =1;
     for (int i=0; i<packs;i++)
     {

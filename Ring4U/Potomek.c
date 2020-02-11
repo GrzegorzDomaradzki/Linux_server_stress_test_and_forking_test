@@ -2,14 +2,15 @@
 #include <signal.h>
 
 void setsig();
-void sighandle();
+void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable);
 
+int enemy_pgid =-1;
 
 int main(int argc, char** argv)
 {
     setsig();
     pause();
-    execlp("./Hooligan","Hooligan",NULL);
+    if(enemy_pgid!=-1)execlp("./Hooligan","Hooligan",enemy_pgid,NULL);
     return -1;
 }
 
@@ -22,7 +23,7 @@ void setsig()
 }
 
 
-void sighandle()
+void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable)
 {
-
+    enemy_pgid=signal_info->si_value.sival_int;
 }
