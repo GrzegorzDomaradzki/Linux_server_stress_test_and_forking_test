@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 void attack();
 void defend();
@@ -12,10 +13,12 @@ int choose_sig();
 void sigaction_asked(int, siginfo_t *, void *);
 void sigaction_answered(int, siginfo_t *, void *);
 void fight(char* path,int enemy_pgid);
+void call_to_boss();
 
 struct sigaction old_action;
 int changed =0;
 int enemy_id=-1;
+int alive=1;
 
 int main(int argc, char** argv)
 {
@@ -66,6 +69,7 @@ void setsig()
 
 void find_enemy(int enemy_pgid)
 {
+    alive =0;
     struct timespec to_sleep;
     to_sleep.tv_sec=0;
     to_sleep.tv_nsec=rand()%50;
@@ -93,6 +97,7 @@ void action_asked(int signal, siginfo_t * signal_info, void * some_weird_variabl
 void sigaction_answered(int signal, siginfo_t * signal_info, void * some_weird_variable)
 {
     int sender = signal_info->si_pid;
+    alive =1;
     if (enemy_id!=-1)
     {
      if (0!=rand()%3) enemy_id=sender;
@@ -101,4 +106,33 @@ void sigaction_answered(int signal, siginfo_t * signal_info, void * some_weird_v
 }
 
 void fight(char* path,int enemy_pgid)
-{}
+{
+    int desc;
+    int after_attack=0;
+    while(alive)
+    {
+
+        if(-1!=(desc=open(path,O_WRONLY|O_NONBLOCK)))
+        {
+            if (after_attack==1) enemy_id=-1;
+            defend();
+            find_enemy(enemy_pgid);
+            close(desc);
+            after_attack=0;
+        }
+        else
+        {
+            attack();
+            after_attack=1;
+        }
+
+    }
+    call_to_boss();
+    while(1) pause();
+
+}
+
+void call_to_boss()
+{
+    kill(getppid(),SIGRTMIN+13);
+}

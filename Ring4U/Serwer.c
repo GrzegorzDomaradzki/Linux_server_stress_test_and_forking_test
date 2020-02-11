@@ -13,6 +13,8 @@ void read_letters(char* FI,struct timespec sign_in_open_time);
 void give_them_hell(int* good_fathers,int* goons);
 int make_arbiter();
 int is_epmty(int FO_desc,char* FO);
+void set_sig();
+void sighandle(int, siginfo_t *, void *);
 
 int arbiter_pid;
 int fight=0;
@@ -58,6 +60,7 @@ int main(int argc, char** argv)
         perror("Arbiter making error");
         exit(-1);
     }
+    set_sig();
     feed_them(FI,FO,delay,max_recruit_num,sign_in_open_time);
     return 0;
 }
@@ -89,6 +92,7 @@ void feed_them(char* FI,char* FO,long delay,long max_recruit_num,long sign_in_op
     }
     while(1)
     {
+        nanosleep(&sleep_delay,NULL);
         if(is_epmty(FO_desc,FO)) give_food(FO_desc,max_recruit_num);
         if(!fight) {
             read_letters(FI, sleep_open_time);
@@ -173,5 +177,23 @@ void make_fifo(char* FI, char* FO)
     {
         perror("Can't create FIFO (FO) file");
         exit(-1);
+    }
+}
+
+
+void setsig()
+{
+    struct sigaction new_action, new_action2;
+    new_action.sa_sigaction = sighandle;
+    sigemptyset (&new_action.sa_mask);
+    sigaction(SIGRTMIN+13,&new_action,NULL);
+}
+
+
+void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable)
+{
+    if(signal_info->si_value.sival_int)
+    {
+
     }
 }

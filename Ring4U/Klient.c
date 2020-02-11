@@ -8,16 +8,17 @@
 #include <errno.h>
 
 
-void karmnik(char* FI, char* FO, char* Totem);
-void ring4u();
+void karmnik(char* FI, char* FO);
 void setsig();
 void sighandle(int, siginfo_t *, void *);
+void find_child(int, siginfo_t *, void *);
 void sign_in(char* file);
 int forking(int** child_table,int size);
-void ring4u(char* Totem,int* child_table);
-void ask();
+void ring4u( int** child_table,int* table_size);
 
+int to_change=-1;
 int fight=0;
+int win=1;
 int children=0;
 int pgid = -1;
 int enemy_pgid = -1;
@@ -39,24 +40,33 @@ int main(int argc, char** argv)
     sprintf(Totem,"%s/Totem",var);
     srand(time(NULL));
     setsig();
-    karmnik(FI,FO,Totem);
+    karmnik(FI,FO);
     return 0;
 }
 
 void setsig()
 {
-    struct sigaction new_action;
+    struct sigaction new_action, new_action2;
     new_action.sa_sigaction = sighandle;
     sigemptyset (&new_action.sa_mask);
     sigaction(SIGRTMIN+13,&new_action,NULL);
+    new_action2.sa_sigaction = find_child;
+    sigemptyset (&new_action2.sa_mask);
+    sigaction(SIGBUS,&new_action2,NULL);
 }
 
 
 void sighandle(int signal, siginfo_t * signal_info, void * some_weird_variable)
 {
+    int sender=signal_info->si_pid;
+    if (getpgid(sender)==pgid)
+    {
+        win=1;
+        return;
+    }
     fight=1;
     enemy_pgid=signal_info->si_value.sival_int;
-    server_pid=signal_info->si_pid;
+    server_pid=sender;
 }
 
 void sign_in(char* file)
@@ -108,7 +118,7 @@ int forking(int** child_table,int size)
     return size;
 }
 
-void karmnik(char* FI, char* FO, char* Totem)
+void karmnik(char* FI, char* FO)
 {
 
     struct timespec to_sleep;
@@ -134,16 +144,30 @@ void karmnik(char* FI, char* FO, char* Totem)
             if (-1 != read(desc, &pass, sizeof(char)) && !fight) table_size=forking(&child_table,table_size);
             to_sleep.tv_nsec = rand() / 100;
         }
-        ring4u(Totem,child_table);
+        ring4u(&child_table,&table_size);
     }
 }
 
-void ring4u(char* Totem, int* child_table)
+void ring4u( int** child_table,int* table_size)
 {
     union sigval to_send;
     to_send.sival_int=enemy_pgid;
     for(int i =0;i<children;i++)
     {
-        sigqueue(child_table[i],SIGRTMIN+13,to_send);
+        sigqueue(*child_table[i],SIGRTMIN+13,to_send);
+    }
+    int init_children_num = children;
+    win=0;
+    while (fight)
+    {
+        if(win)
+        {
+            to_send.sival_int=1;
+            sigqueue(server_pid,SIGRTMIN+13,to_send);
+            kill_witness(child_table,table_size);
+        } else {
+            count_bodies();
+            if(!children) surrender(child_table,table_size,init_children_num);
+        }
     }
 }
