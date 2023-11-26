@@ -13,7 +13,7 @@ W dodatku Wall Clock zwraca czas lokalny dla pracy każdego procesu - porównani
     
     #####LOCAL/UNIX
     Kiedy klient kończy testy na każde gnizado wysyła pojedyńczy zerowy bit. Serwer przerywa czytanie.
-    Jest to wywołane problemem z nieskończonego czytania z zamkniętego deskryptora. **Bo kurwa unix jest zjebany!**
+    Jest to wywołane problemem z nieskończonego czytania z zamkniętego deskryptora. 
 
 ## Co nie działa:
 Czasami read nie zwraca błędu - errno nie zostaje ustawione. Można czytać w nieskończonośc z zamkniętego deskryptora.
